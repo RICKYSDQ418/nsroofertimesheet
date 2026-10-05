@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1d4f66">
+<meta name="format-detection" content="telephone=no,address=no,email=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta name="description" content="NS Roofing 每日工时填写">
+<title>NS Roofing 工时</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef0ec;--card:#fff;--ink:#1e2a32;--ink2:#5b6870;--ink3:#93a0a6;--line:#d6dcd8;
+  --steel:#1d4f66;--steel2:#e3edf1;--ok:#2f7a4c;--okbg:#e5f2ea;--warn:#b54708;--warnbg:#fdf0e3;--bad:#b42318;
+  --num:'Barlow Semi Condensed','Noto Sans SC',sans-serif;--fn:'Noto Sans SC',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{background:var(--bg)}
+body{font-family:var(--fn);color:var(--ink);font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--steel);outline-offset:2px}
+.hide{display:none!important}
+
+/* 顶栏 */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--steel);color:#fff;display:flex;align-items:center;gap:12px;padding:10px 16px;min-height:52px}
+.brand{font-family:var(--num);font-weight:700;font-size:19px;letter-spacing:.01em;white-space:nowrap}
+.brand small{font-family:var(--fn);font-weight:500;font-size:13px;opacity:.75;margin-left:6px}
+.bar .sp{flex:1}
+.who{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:5px 12px;font-size:13px;color:#fff;white-space:nowrap}
+.tabs{display:flex;gap:2px;overflow-x:auto}
+.tab{background:none;border:none;color:rgba(255,255,255,.7);padding:6px 12px;border-radius:8px;font-size:14px;white-space:nowrap}
+.tab.on{background:rgba(255,255,255,.16);color:#fff;font-weight:700}
+.demo{background:var(--warnbg);color:var(--warn);font-size:12px;text-align:center;padding:6px 12px;border-bottom:1px solid #f3d3b4}
+
+.wrap{max-width:560px;margin:0 auto;padding:16px 14px 40px}
+.wide{max-width:1280px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px}
+h2{font-size:16px;font-weight:700;margin-bottom:12px}
+label.l{display:block;font-size:13px;color:var(--ink2);font-weight:500;margin:14px 0 6px}
+label.l:first-of-type{margin-top:0}
+.in{width:100%;background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:11px 12px;font-size:16px;outline:none}
+.in:focus{border-color:var(--steel)}
+.btn{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:10px 16px;font-size:15px;font-weight:600;white-space:nowrap}
+.btn:hover{border-color:var(--steel);color:var(--steel)}
+.btn.pri{background:var(--steel);border-color:var(--steel);color:#fff}
+.btn.pri:hover{background:#163f52;color:#fff}
+.btn.sm{padding:6px 11px;font-size:13px}
+.btn.del{color:var(--bad)}
+.btn.del:hover{border-color:var(--bad)}
+.btn:disabled{opacity:.5;cursor:default}
+.muted{color:var(--ink2);font-size:13px}
+.err{color:var(--bad);font-size:13px;min-height:20px;margin-top:8px}
+
+/* 登录 */
+.login{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:48px 16px 24px}
+.login .logo{font-family:var(--num);font-weight:700;font-size:34px;color:var(--steel);line-height:1}
+.login .logo span{display:block;font-family:var(--fn);font-size:15px;font-weight:500;color:var(--ink2);margin-top:6px}
+.login .box{width:100%;max-width:400px;margin-top:28px}
+.names{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.name{background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:14px 8px;font-size:16px;font-weight:600}
+.name.on{border-color:var(--steel);background:var(--steel2);color:var(--steel)}
+.pinrow{display:flex;gap:8px;margin-top:14px}
+.pinrow .in{letter-spacing:.4em;font-family:var(--num);font-size:22px;text-align:center}
+.adminlink{margin-top:28px;background:none;border:none;color:var(--ink2);font-size:13px;text-decoration:underline}
+
+/* 工人：日期 */
+.daynav{display:flex;align-items:center;gap:10px}
+.daynav button{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line);background:#fff;font-size:20px;line-height:1;flex-shrink:0}
+.daynav button:disabled{opacity:.3}
+.dmid{flex:1;text-align:center}
+.dbig{font-family:var(--num);font-weight:700;font-size:26px;line-height:1.1}
+.dsub{font-size:13px;color:var(--ink2)}
+.daytot{display:flex;align-items:baseline;justify-content:center;gap:6px;margin:14px 0 4px}
+.daytot b{font-family:var(--num);font-size:48px;font-weight:700;line-height:1;color:var(--steel)}
+.entry{display:flex;gap:12px;align-items:center;border-top:1px solid var(--line);padding:12px 0}
+.entry .h{font-family:var(--num);font-weight:700;font-size:24px;min-width:44px;color:var(--steel)}
+.entry .t{flex:1;min-width:0}
+.entry .a{font-weight:600;overflow-wrap:anywhere}
+.entry .s{font-size:12px;color:var(--ink2)}
+.addrwrap{position:relative}
+.addrwrap .in{padding-right:40px}
+.addrclr{position:absolute;right:4px;top:4px;width:38px;height:38px;border:none;background:none;font-size:18px;color:var(--ink3)}
+.sugs{border:1.5px solid var(--steel);border-top:none;border-radius:0 0 8px 8px;margin-top:-6px;padding-top:6px;background:#fff;overflow:hidden}
+.sugs .cap{font-size:12px;color:var(--ink2);padding:6px 12px 4px}
+.sug{display:block;width:100%;text-align:left;border:none;border-top:1px solid var(--line);background:none;padding:12px;font-size:15px;line-height:1.35}
+.sug:hover,.sug:active{background:var(--steel2)}
+.sug b{color:var(--steel);font-weight:700}
+.sug.best{background:var(--steel2)}
+.sug small{display:block;font-size:12px;color:var(--ink3)}
+.mstep{display:inline-flex;align-items:center;border:1.5px solid var(--line);border-radius:8px;background:#fff}
+.mstep button{border:none;background:none;width:40px;height:38px;font-size:20px}
+.mstep button:disabled{opacity:.3}
+.mstep span{font-family:var(--num);font-weight:700;font-size:17px;min-width:92px;text-align:center}
+.wxtip{background:var(--steel2);color:var(--steel);border-radius:8px;padding:10px 12px;font-size:13px;margin-top:22px;max-width:400px;width:100%;line-height:1.6}
+.lock{background:var(--steel2);color:var(--steel);border-radius:8px;padding:12px;font-size:13px}
+
+/* 类型 + 工时尺 —— 本页的主角 */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:7px 13px;font-size:14px}
+.chip.on{border-color:var(--steel);background:var(--steel);color:#fff;font-weight:600}
+.ruler{display:grid;grid-template-columns:repeat(7,1fr);border:1.5px solid var(--ink);border-radius:8px;overflow:hidden;background:#fff}
+.ruler button{border:none;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:none;height:52px;font-family:var(--num);font-weight:600;font-size:22px;position:relative}
+.ruler button:nth-child(7n){border-right:none}
+.ruler button:nth-child(n+8){border-bottom:none}
+.ruler button::before{content:"";position:absolute;top:0;left:50%;width:1px;height:7px;background:var(--ink3)}
+.ruler button.in-range{background:var(--steel2)}
+.ruler button.on{background:var(--steel);color:#fff}
+.ruler button.on::before{background:#fff}
+.rulercap{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-top:6px}
+.rulercap b{font-family:var(--num);font-size:16px;color:var(--ink)}
+.factions{display:flex;gap:8px;margin-top:18px}
+.factions .pri{flex:1;padding:13px}
+.msum{display:flex;gap:24px}
+.msum div b{display:block;font-family:var(--num);font-size:30px;font-weight:700;line-height:1.1}
+.msum div span{font-size:12px;color:var(--ink2)}
+details summary{cursor:pointer;font-size:13px;color:var(--steel);margin-top:12px}
+.mrow{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.mrow b{font-family:var(--num);font-size:15px}
+.toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top,0px));transform:translateX(-50%) translateY(-10px);max-width:90vw;text-align:center;background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:99}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* 管理端 */
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ctrl .in{width:auto;padding:8px 10px;font-size:14px}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.seg button{border:none;background:none;padding:8px 13px;font-size:14px;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--steel);color:#fff;font-weight:600}
+.stats{display:flex;flex-wrap:wrap;gap:28px;margin:4px 0 2px}
+.stats div b{display:block;font-family:var(--num);font-size:32px;font-weight:700;line-height:1.1}
+.stats div span{font-size:12px;color:var(--ink2)}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:#fff}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{background:#f5f7f5;text-align:left;font-weight:600;font-size:12px;color:var(--ink2);padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.n{font-family:var(--num);font-weight:700;font-size:16px;white-space:nowrap}
+.empty{padding:40px 16px;text-align:center;color:var(--ink2)}
+.pv th,.pv td{text-align:center;padding:7px 4px;min-width:30px;font-family:var(--num);font-size:14px}
+.pv th:first-child,.pv td:first-child{text-align:left;position:sticky;left:0;background:#fff;font-family:var(--fn);padding-left:12px;min-width:96px;white-space:nowrap;z-index:1}
+.pv th:first-child{background:#f5f7f5}
+.pv .we{background:#f3f5f3}
+.pv .z{color:var(--ink3)}
+.pv .tot{color:var(--steel);font-weight:700}
+.pv tfoot td{border-top:2px solid var(--line);font-weight:700}
+.wk{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+.wk .nm{flex:1;min-width:120px;font-weight:600}
+.wk.off{opacity:.5}
+
+/* 弹窗 */
+.ov{position:fixed;inset:0;background:rgba(20,30,36,.5);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.ov .sheet{background:#fff;width:100%;max-width:520px;max-height:92vh;overflow:auto;border-radius:14px 14px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+@media(min-width:640px){.ov{align-items:center}.ov .sheet{border-radius:14px}}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+@media(max-width:640px){.hide-m{display:none}.bar{gap:8px;padding:8px 10px}.brand{font-size:16px}.tab{padding:6px 9px;font-size:13px}.who{padding:5px 10px}.tw table{min-width:620px}.tw table.pv{min-width:0}.stats{gap:18px}.stats div b{font-size:26px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="demo" class="demo hide">本地演示模式：数据只保存在这台设备上。填入 Firebase 配置后才能多人共用。</div>
+
+<!-- 登录 -->
+<section id="v-login" class="login hide">
+  <div class="logo">NS Roofing<span>每日工时</span></div>
+  <div class="box" id="login-worker">
+    <label class="l">选择你的名字</label>
+    <div class="names" id="names"></div>
+    <div class="pinrow"><input class="in" id="pin" type="password" inputmode="numeric" maxlength="6" placeholder="PIN" autocomplete="off"><button class="btn pri" id="btn-login">登录</button></div>
+    <div class="err" id="login-err"></div>
+  </div>
+  <div class="box hide" id="login-admin">
+    <label class="l">管理员 PIN</label>
+    <div class="pinrow" style="margin-top:0"><input class="in" id="apin" type="password" inputmode="numeric" maxlength="8" placeholder="PIN" autocomplete="off"><button class="btn pri" id="btn-alogin">进入</button></div>
+    <div class="err" id="alogin-err"></div>
+  </div>
+  <button class="adminlink" id="swap-login">管理员入口</button>
+  <div class="wxtip hide" id="wxtip">在微信里每天打开更快：点右上角 ··· → <b>浮窗</b>（或 <b>收藏</b>），下次从聊天列表顶上的浮窗直接进来。登录一次后会记住你。</div>
+</section>
+
+<!-- 工人 -->
+<section id="v-worker" class="hide">
+  <header class="bar"><div class="brand">NS Roofing<small>工时</small></div><div class="sp"></div><button class="who" id="w-who"></button></header>
+  <main class="wrap">
+    <div class="card">
+      <div class="daynav"><button id="d-prev" aria-label="前一天">‹</button><div class="dmid"><div class="dbig" id="d-big"></div><div class="dsub" id="d-sub"></div></div><button id="d-next" aria-label="后一天">›</button></div>
+      <div class="daytot"><b id="d-tot">0</b><span class="muted">小时</span></div>
+      <div id="w-list"></div>
+    </div>
+    <div class="card" id="w-form">
+      <h2 id="f-title">添加一条</h2>
+      <label class="l" for="f-addr">地址</label>
+      <div class="addrwrap"><input class="in" id="f-addr" placeholder="例：2959 NS-331 Pleasantville" autocomplete="off"><button type="button" class="addrclr" id="f-addr-clr" aria-label="清空地址">✕</button></div>
+      <div class="sugs hide" id="f-sugs"></div>
+      <label class="l">项目类型</label>
+      <div class="chips" id="f-type"></div>
+      <label class="l">工时</label>
+      <div class="ruler" id="f-hours"></div>
+      <div class="rulercap"><span>1 小时为单位</span><span>已选 <b id="f-hsel">8</b> 小时</span></div>
+      <label class="l" for="f-notes">备注（可选）</label>
+      <input class="in" id="f-notes" placeholder="例：拆旧、铺瓦、收尾" autocomplete="off">
+      <div class="factions"><button class="btn hide" id="f-cancel">取消修改</button><button class="btn pri" id="f-save">保存</button></div>
+    </div>
+    <div class="card hide" id="w-locked"><div class="lock">超过 <span id="lockdays"></span> 天的记录不能再修改。需要改请联系办公室。</div></div>
+    <div class="card">
+      <h2 id="m-title">本月</h2>
+      <div class="msum"><div><b id="m-h">0</b><span>总工时</span></div><div><b id="m-d">0</b><span>出勤天数</span></div></div>
+      <details><summary>按天查看</summary><div id="m-days" style="margin-top:8px"></div></details>
+    </div>
+  </main>
+</section>
+
+<!-- 管理 -->
+<section id="v-admin" class="hide">
+  <header class="bar"><div class="brand">NS Roofing<small class="hide-m">工时管理</small></div>
+    <nav class="tabs" id="a-tabs"><button class="tab on" data-t="sum">月度汇总</button><button class="tab" data-t="wk">工人</button><button class="tab" data-t="set">设置</button></nav>
+    <div class="sp"></div><button class="who" id="a-out">退出</button></header>
+  <main class="wrap wide">
+    <div id="t-sum">
+      <div class="card">
+        <div class="ctrl">
+          <input type="hidden" id="a-month"><div class="mstep"><button type="button" id="a-mprev" aria-label="上个月">‹</button><span id="a-mlbl"></span><button type="button" id="a-mnext" aria-label="下个月">›</button></div>
+          <select class="in" id="a-worker"></select>
+          <select class="in" id="a-type"></select>
+          <input class="in" id="a-q" placeholder="搜索地址" style="flex:1;min-width:140px">
+        </div>
+        <div class="ctrl" style="margin-top:10px;justify-content:space-between">
+          <div class="seg" id="a-view"><button class="on" data-v="detail">明细</button><button data-v="pivot">工人×日期</button><button data-v="addr">按地址</button></div>
+          <div class="ctrl"><button class="btn sm" id="a-add">＋ 补录</button><button class="btn sm pri" id="a-export">导出 Excel</button></div>
+        </div>
+      </div>
+      <div class="stats" id="a-stats" style="margin:0 2px 14px"></div>
+      <div class="tw" id="a-body"></div>
+    </div>
+    <div id="t-wk" class="hide">
+      <div class="card">
+        <h2>添加工人</h2>
+        <div class="ctrl"><input class="in" id="wk-name" placeholder="姓名" style="flex:1;min-width:140px"><input class="in" id="wk-pin" placeholder="4 位 PIN" inputmode="numeric" maxlength="6" style="width:110px"><button class="btn pri" id="wk-add">添加</button></div>
+        <div class="err" id="wk-err"></div>
+      </div>
+      <div class="card"><h2>工人名单</h2><div id="wk-list"></div>
+        <p class="muted" style="margin-top:10px">有工时记录的工人不能删除，只能停用。停用后登录页不再显示，历史数据保留。</p></div>
+    </div>
+    <div id="t-set" class="hide">
+      <div class="card">
+        <h2>管理员 PIN</h2>
+        <p class="muted" id="set-warn" style="margin-bottom:10px"></p>
+        <div class="ctrl"><input class="in" id="set-pin" type="password" inputmode="numeric" maxlength="8" placeholder="新 PIN（至少 4 位）"><button class="btn pri" id="set-save">保存</button></div>
+      </div>
+      <div class="card"><h2>数据连接</h2><p class="muted" id="set-conn"></p></div>
+    </div>
+  </main>
+</section>
+
+<!-- 编辑弹窗（管理员补录/编辑） -->
+<div class="ov hide" id="ov-edit"><div class="sheet">
+  <h2 id="e-title">编辑记录</h2>
+  <div class="g2">
+    <div><label class="l" for="e-date">日期</label><input class="in" type="date" id="e-date"></div>
+    <div><label class="l" for="e-worker">工人</label><select class="in" id="e-worker"></select></div>
+  </div>
+  <label class="l" for="e-addr">地址</label><div class="addrwrap"><input class="in" id="e-addr" autocomplete="off"><button type="button" class="addrclr" id="e-addr-clr" aria-label="清空地址">✕</button></div><div class="sugs hide" id="e-sugs"></div>
+  <div class="g2">
+    <div><label class="l" for="e-type">项目类型</label><select class="in" id="e-type"></select></div>
+    <div><label class="l" for="e-hours">工时</label><select class="in" id="e-hours"></select></div>
+  </div>
+  <label class="l" for="e-notes">备注</label><input class="in" id="e-notes" autocomplete="off">
+  <div class="err" id="e-err"></div>
+  <div class="factions"><button class="btn del hide" id="e-del">删除</button><button class="btn" id="e-cancel">取消</button><button class="btn pri" id="e-save">保存</button></div>
+</div></div>
+
+<!-- 微信里导出 -->
+<div class="ov hide" id="ov-wx"><div class="sheet">
+  <h2>微信里不能下载文件</h2>
+  <p class="muted" style="line-height:1.7">要导出 Excel：点右上角 <b>···</b>，选 <b>在默认浏览器中打开</b>（iPhone 是 <b>在 Safari 中打开</b>），登录后再点「导出 Excel」。</p>
+  <p class="muted" style="line-height:1.7;margin-top:10px">或者先复制表格，粘贴到 Excel / WPS / 备忘录里：</p>
+  <div class="factions" style="flex-wrap:wrap"><button class="btn" id="wx-copy1">复制明细</button><button class="btn" id="wx-copy2">复制工人×日期</button><button class="btn pri" id="wx-ok">知道了</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ── 兼容老版本微信内置浏览器 ──
+if(!String.prototype.padStart)String.prototype.padStart=function(n,c){var s=String(this);c=c||' ';while(s.length<n)s=c+s;return s.slice(-Math.max(n,String(this).length))};
+if(!Array.prototype.find)Array.prototype.find=function(f){for(var i=0;i<this.length;i++)if(f(this[i],i,this))return this[i]};
+if(!Element.prototype.matches)Element.prototype.matches=Element.prototype.webkitMatchesSelector||Element.prototype.msMatchesSelector;
+if(!Element.prototype.closest)Element.prototype.closest=function(sel){var el=this;while(el&&el.nodeType===1){if(el.matches(sel))return el;el=el.parentElement}return null};
+if(typeof Object.assign!=='function')Object.assign=function(t){for(var i=1;i<arguments.length;i++){var s=arguments[i];if(s)for(var k in s)if(Object.prototype.hasOwnProperty.call(s,k))t[k]=s[k]}return t};
+var IS_WX=/MicroMessenger/i.test(navigator.userAgent);
+
+// ═════════════════════════════════════════════════════════
+// ① 填入 Firebase 配置（Firebase 控制台 → 项目设置 → 你的应用 → firebaseConfig）
+//    留空 = 本地演示模式（数据只存在这台设备）
+//    可以和 ERP 共用同一个 Firebase 项目，数据都放在 "timesheet" 节点下，互不影响
+// ═════════════════════════════════════════════════════════
+var FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAcHSrJ5NYizyn0GHFc1SzS6br8KcS7pv0",
+  authDomain: "time-sheet-ca3e0.firebaseapp.com",
+  databaseURL: "https://time-sheet-ca3e0-default-rtdb.firebaseio.com",
+  projectId: "time-sheet-ca3e0"
+};
+var ROOT = 'timesheet';     // 数据根节点
+var LOCK_DAYS = 7;          // 工人只能修改最近几天的记录
+var DEFAULT_ADMIN_PIN = '0000';
+
+var TYPES=[['Shingle','沥青瓦'],['Metal','金属屋面'],['Flat','平屋面'],['Repair','维修'],['Siding','外墙板'],['Insulation','保温'],['Other','其他']];
+var WD=['日','一','二','三','四','五','六'];
+var MAX_H=14;
+
+// ── 本机存储（有的环境不允许，比如在聊天预览里打开）──
+var STORE_OK=(function(){try{localStorage.setItem('nsts_t','1');localStorage.removeItem('nsts_t');return true}catch(e){return false}})();
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
+
+// ── 数据层：Firebase 或本地 ──
+var DB=(function(){
+  var live=!!(FIREBASE_CONFIG.databaseURL&&typeof firebase!=='undefined'),fdb=null;
+  if(live){try{if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);fdb=firebase.database()}catch(e){live=false;console.error(e)}}
+  var LS='nsts_demo_data',local={},subs=[];
+  try{local=JSON.parse(lsGet(LS)||'{}')}catch(e){}
+  function get(o,p){return p.split('/').reduce(function(c,k){return c&&c[k]},o)}
+  function put(o,p,v){var ks=p.split('/'),c=o;for(var i=0;i<ks.length-1;i++){if(!c[ks[i]]||typeof c[ks[i]]!=='object')c[ks[i]]={};c=c[ks[i]]}if(v===null)delete c[ks[ks.length-1]];else c[ks[ks.length-1]]=v}
+  function emit(){lsSet(LS,JSON.stringify(local));subs.forEach(function(s){s.cb(JSON.parse(JSON.stringify(get(local,s.p)||null)))})}
+  function P(p){return ROOT+'/'+p}
+  return{live:live,
+    on:function(p,cb){if(live)fdb.ref(P(p)).on('value',function(s){cb(s.val())},function(e){toast('读取失败：'+e.message)});else{subs.push({p:P(p),cb:cb});cb(JSON.parse(JSON.stringify(get(local,P(p))||null)))}},
+    set:function(p,v){if(live)return fdb.ref(P(p)).set(v);put(local,P(p),v);emit();return Promise.resolve()},
+    update:function(p,v){if(live)return fdb.ref(P(p)).update(v);var n=Object.assign({},get(local,P(p))||{},v);put(local,P(p),n);emit();return Promise.resolve()},
+    push:function(p,v){if(live){var r=fdb.ref(P(p)).push();return r.set(v).then(function(){return r.key})}var id='k'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);put(local,P(p)+'/'+id,v);emit();return Promise.resolve(id)},
+    remove:function(p){if(live)return fdb.ref(P(p)).remove();put(local,P(p),null);emit();return Promise.resolve()},
+    conn:function(cb){if(live)fdb.ref('.info/connected').on('value',function(s){cb(!!s.val())})}
+  };
+})();
+
+// ── 状态 ──
+var ST={workers:{},entries:{},settings:{}},READY={workers:0,entries:0,settings:0};
+var ME=null;                 // {role:'worker',id} | {role:'admin'}
+var DAY=today(),EDIT=null;   // 工人当前查看日期、正在修改的记录 id
+var F={type:'Shingle',hours:8};
+var A={view:'detail',tab:'sum',editId:null};
+
+// ── 工具 ──
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function today(){return ymd(new Date())}
+function parse(ds){var p=ds.split('-');return new Date(+p[0],+p[1]-1,+p[2])}
+function addDays(ds,n){var d=parse(ds);d.setDate(d.getDate()+n);return ymd(d)}
+function wd(ds){return WD[parse(ds).getDay()]}
+function dim(m){var p=m.split('-');return new Date(+p[0],+p[1],0).getDate()}
+function typeName(t){var f=TYPES.find(function(x){return x[0]===t});return f?f[1]:(t||'—')}
+function wName(id,fb){var w=ST.workers[id];return w?w.name:(fb||'—')}
+function entries(){return Object.keys(ST.entries||{}).map(function(k){return Object.assign({id:k},ST.entries[k])})}
+function sum(a){return a.reduce(function(s,e){return s+(+e.hours||0)},0)}
+function adminPin(){return(ST.settings&&ST.settings.adminPin)||DEFAULT_ADMIN_PIN}
+function lockedDate(ds){return ds<addDays(today(),-LOCK_DAYS)}
+var tt;function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show')},2200)}
+function show(v){['v-login','v-worker','v-admin'].forEach(function(x){$(x).classList.toggle('hide',x!==v)})}
+function typeOpts(sel){return TYPES.map(function(t){return'<option value="'+t[0]+'"'+(t[0]===sel?' selected':'')+'>'+t[1]+'（'+t[0]+'）</option>'}).join('')}
+function hourOpts(sel){var h='';for(var i=1;i<=16;i++)h+='<option value="'+i+'"'+(i==sel?' selected':'')+'>'+i+' 小时</option>';return h}
+
+// ── 订阅数据 ──
+DB.on('workers',function(v){ST.workers=v||{};READY.workers=1;rerender()});
+DB.on('entries',function(v){ST.entries=v||{};READY.entries=1;rerender()});
+DB.on('settings',function(v){ST.settings=v||{};READY.settings=1;rerender()});
+if(IS_WX)$('wxtip').classList.remove('hide');
+if(!DB.live){$('demo').classList.remove('hide');if(!STORE_OK)$('demo').textContent='当前打开方式不能保存数据，刷新后所有记录（包括地址）都会消失。请上传到 GitHub Pages，用网址打开。'}
+
+function rerender(){
+  if(!READY.workers||!READY.entries||!READY.settings)return;
+  if(!ME){restoreSession();return}
+  if(ME.role==='worker'){var w=ST.workers[ME.id];if(!w||w.active===false){logout();return}renderWorker()}
+  else renderAdmin();
+  fillAddrList();
+}
+
+// ── 登录 ──
+var pickId=null,adminMode=false;
+function restoreSession(){
+  try{var s=JSON.parse(lsGet('nsts_me')||'null');
+    if(s&&s.role==='worker'&&ST.workers[s.id]&&ST.workers[s.id].active!==false&&s.pin===ST.workers[s.id].pin){ME=s;enterWorker();return}
+    if(s&&s.role==='admin'&&s.pin===adminPin()){ME=s;enterAdmin();return}
+  }catch(e){}
+  renderLogin();
+}
+function renderLogin(){
+  show('v-login');
+  var list=Object.keys(ST.workers).filter(function(k){return ST.workers[k].active!==false}).sort(function(a,b){return ST.workers[a].name.localeCompare(ST.workers[b].name)});
+  $('names').innerHTML=list.length?list.map(function(k){return'<button class="name'+(k===pickId?' on':'')+'" data-id="'+k+'">'+esc(ST.workers[k].name)+'</button>'}).join(''):'<p class="muted">还没有工人。请管理员先在「管理员入口 → 工人」里添加。</p>';
+  $('login-worker').classList.toggle('hide',adminMode);$('login-admin').classList.toggle('hide',!adminMode);
+  $('swap-login').textContent=adminMode?'返回工人登录':'管理员入口';
+}
+$('names').addEventListener('click',function(e){var b=e.target.closest('.name');if(!b)return;pickId=b.dataset.id;renderLogin();$('pin').focus()});
+$('swap-login').addEventListener('click',function(){adminMode=!adminMode;$('login-err').textContent='';$('alogin-err').textContent='';renderLogin();(adminMode?$('apin'):$('pin')).focus()});
+function doLogin(){
+  if(!pickId){$('login-err').textContent='先点你的名字';return}
+  var w=ST.workers[pickId];
+  if(!w||$('pin').value.trim()!==String(w.pin)){$('login-err').textContent='PIN 不对，再试一次';return}
+  ME={role:'worker',id:pickId,pin:String(w.pin)};lsSet('nsts_me',JSON.stringify(ME));
+  $('pin').value='';$('login-err').textContent='';enterWorker();
+}
+function doAdminLogin(){
+  if($('apin').value.trim()!==adminPin()){$('alogin-err').textContent='PIN 不对';return}
+  ME={role:'admin',pin:adminPin()};lsSet('nsts_me',JSON.stringify(ME));
+  $('apin').value='';$('alogin-err').textContent='';enterAdmin();
+}
+$('btn-login').addEventListener('click',doLogin);
+$('pin').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()});
+$('btn-alogin').addEventListener('click',doAdminLogin);
+$('apin').addEventListener('keydown',function(e){if(e.key==='Enter')doAdminLogin()});
+function logout(){ME=null;pickId=null;adminMode=false;EDIT=null;lsDel('nsts_me');renderLogin()}
+
+// ═════════ 工人端 ═════════
+function enterWorker(){DAY=today();resetForm();show('v-worker');renderWorker();fillAddrList()}
+$('w-who').addEventListener('click',function(){if(confirm('退出登录？'))logout()});
+$('d-prev').addEventListener('click',function(){DAY=addDays(DAY,-1);resetForm();renderWorker()});
+$('d-next').addEventListener('click',function(){if(DAY<today()){DAY=addDays(DAY,1);resetForm();renderWorker()}});
+
+function buildPickers(){
+  $('f-type').innerHTML=TYPES.map(function(t){return'<button type="button" class="chip'+(t[0]===F.type?' on':'')+'" data-t="'+t[0]+'">'+t[1]+'</button>'}).join('');
+  var h='';for(var i=1;i<=MAX_H;i++)h+='<button type="button" data-h="'+i+'" class="'+(i===F.hours?'on':(i<F.hours?'in-range':''))+'" aria-label="'+i+' 小时">'+i+'</button>';
+  $('f-hours').innerHTML=h;$('f-hsel').textContent=F.hours;
+}
+$('f-type').addEventListener('click',function(e){var b=e.target.closest('.chip');if(!b)return;F.type=b.dataset.t;buildPickers()});
+$('f-hours').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;F.hours=+b.dataset.h;buildPickers()});
+
+function resetForm(){
+  EDIT=null;$('f-addr').value='';$('f-notes').value='';
+  // 默认带上这个工人最近一次的地址和类型，第二天接着干同一个工地很常见
+  var mine=entries().filter(function(e){return ME&&e.workerId===ME.id}).sort(function(a,b){return(b.createdAt||0)-(a.createdAt||0)});
+  if(mine[0]){$('f-addr').value=mine[0].address||'';F.type=mine[0].type||'Shingle'}else F.type='Shingle';
+  var dayH=sum(entries().filter(function(e){return ME&&e.workerId===ME.id&&e.date===DAY}));
+  F.hours=dayH?Math.max(1,Math.min(MAX_H,8-dayH>0?8-dayH:1)):8;
+  $('f-title').textContent='添加一条';$('f-save').textContent='保存';$('f-cancel').classList.add('hide');
+  buildPickers();
+}
+$('f-cancel').addEventListener('click',function(){resetForm();renderWorker()});
+
+function renderWorker(){
+  if(!ME||ME.role!=='worker')return;
+  var w=ST.workers[ME.id];$('w-who').textContent=w.name+'　退出';
+  var isToday=DAY===today(),d=parse(DAY);
+  $('d-big').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日';
+  $('d-sub').textContent='周'+wd(DAY)+(isToday?'　今天':DAY===addDays(today(),-1)?'　昨天':'');
+  $('d-next').disabled=isToday;
+  var mine=entries().filter(function(e){return e.workerId===ME.id});
+  var day=mine.filter(function(e){return e.date===DAY}).sort(function(a,b){return(a.createdAt||0)-(b.createdAt||0)});
+  var locked=lockedDate(DAY);
+  $('d-tot').textContent=sum(day);
+  $('w-list').innerHTML=day.length?day.map(function(e){
+    return'<div class="entry"><div class="h">'+e.hours+'h</div><div class="t"><div class="a">'+esc(e.address)+'</div><div class="s">'+esc(typeName(e.type))+(e.notes?'，'+esc(e.notes):'')+'</div></div>'
+      +(locked?'':'<button class="btn sm" data-edit="'+e.id+'">修改</button>')+'</div>';
+  }).join(''):'<p class="muted" style="text-align:center;padding:6px 0 2px">这天还没有记录</p>';
+  $('w-form').classList.toggle('hide',locked);$('w-locked').classList.toggle('hide',!locked);$('lockdays').textContent=LOCK_DAYS;
+  // 本月
+  var m=DAY.slice(0,7),mon=mine.filter(function(e){return e.month===m}),byDay={};
+  mon.forEach(function(e){byDay[e.date]=(byDay[e.date]||0)+(+e.hours||0)});
+  $('m-title').textContent=(+m.slice(5))+'月合计';
+  $('m-h').textContent=sum(mon);$('m-d').textContent=Object.keys(byDay).length;
+  $('m-days').innerHTML=Object.keys(byDay).sort().reverse().map(function(k){return'<div class="mrow"><span>'+(+k.slice(5,7))+'月'+(+k.slice(8))+'日 周'+wd(k)+'</span><b>'+byDay[k]+'h</b></div>'}).join('')||'<p class="muted">本月还没有记录</p>';
+}
+$('w-list').addEventListener('click',function(e){
+  var b=e.target.closest('[data-edit]');if(!b)return;
+  var x=ST.entries[b.dataset.edit];if(!x)return;
+  EDIT=b.dataset.edit;$('f-addr').value=x.address||'';$('f-notes').value=x.notes||'';F.type=x.type||'Shingle';F.hours=+x.hours||8;buildPickers();
+  $('f-title').textContent='修改记录';$('f-save').textContent='保存修改';$('f-cancel').classList.remove('hide');
+  // 修改时多一个删除入口
+  if(!$('f-del')){var d=document.createElement('button');d.className='btn del';d.id='f-del';d.textContent='删除';$('f-cancel').before(d);d.addEventListener('click',delMine)}
+  $('f-del').classList.remove('hide');
+  $('w-form').scrollIntoView({behavior:'smooth',block:'start'});
+});
+function delMine(){
+  if(!EDIT)return;var x=ST.entries[EDIT];
+  if(!confirm('删除这条记录？'+(x?'\n'+x.address+'  '+x.hours+'h':'')))return;
+  DB.remove('entries/'+EDIT).then(function(){toast('已删除');resetForm();hideDel();renderWorker()});
+}
+function hideDel(){var d=$('f-del');if(d)d.classList.add('hide')}
+$('f-cancel').addEventListener('click',hideDel);
+
+$('f-save').addEventListener('click',function(){
+  var addr=canonAddr($('f-addr').value);
+  if(!addr){toast('请填写地址');$('f-addr').focus();return}
+  if(DAY>today()||lockedDate(DAY)){toast('这天不能再填写');return}
+  var others=entries().filter(function(e){return e.workerId===ME.id&&e.date===DAY&&e.id!==EDIT});
+  var tot=sum(others)+F.hours;
+  if(tot>16){alert('这天合计 '+tot+' 小时，超过 16 小时。请检查是不是重复填写了。');return}
+  if(tot>12&&!confirm('这天合计 '+tot+' 小时，确认没填错？'))return;
+  var w=ST.workers[ME.id];
+  var data={date:DAY,month:DAY.slice(0,7),workerId:ME.id,workerName:w.name,address:addr,type:F.type,hours:F.hours,notes:$('f-notes').value.trim()};
+  var btn=$('f-save');btn.disabled=true;
+  var p=EDIT?DB.update('entries/'+EDIT,Object.assign(data,{updatedAt:Date.now(),updatedBy:w.name})):DB.push('entries',Object.assign(data,{createdAt:Date.now(),createdBy:w.name}));
+  p.then(function(){toast(EDIT?'已保存修改':'已保存 '+F.hours+' 小时');resetForm();hideDel();renderWorker()})
+   .catch(function(e){alert('保存失败：'+(e&&e.message||e)+'\n请检查网络后再试')})
+   .then(function(){btn.disabled=false});
+});
+
+// ── 地址记忆：最近 120 天用过的地址，自己用过的排前面 ──
+function addrPool(mineId){
+  var cut=addDays(today(),-120),seen={},mine=[],rest=[];
+  entries().filter(function(e){return e.date>=cut&&(e.address||'').trim()}).sort(function(a,b){return(b.createdAt||b.updatedAt||0)-(a.createdAt||a.updatedAt||0)}).forEach(function(e){
+    var a=e.address.trim(),k=a.toLowerCase();
+    if(!seen[k])seen[k]={address:a,last:e.date,mine:false,n:0};
+    seen[k].n++;if(mineId&&e.workerId===mineId)seen[k].mine=true;
+  });
+  Object.keys(seen).forEach(function(k){(seen[k].mine?mine:rest).push(seen[k])});
+  return mine.concat(rest);
+}
+// 地址标准化：忽略大小写、标点、空格，常见缩写视为相同（Street=St、Road=Rd…）
+var ABBR={street:'st',road:'rd',avenue:'ave',av:'ave',drive:'dr',highway:'hwy',hiway:'hwy',court:'ct',lane:'ln',crescent:'cres',cr:'cres',boulevard:'blvd',place:'pl',terrace:'terr',ter:'terr',circle:'cir',way:'wy',north:'n',south:'s',east:'e',west:'w',nova:'',scotia:'',canada:''};
+function aTok(s){return String(s||'').toLowerCase().replace(/[.,#\-\/()'’]/g,' ').split(/\s+/).filter(Boolean).map(function(w){return ABBR.hasOwnProperty(w)?ABBR[w]:w}).filter(Boolean)}
+function aKey(s){return aTok(s).join('')}
+// 已有地址里找“同一个地址”，保存时统一成第一次的写法
+function canonAddr(a){var k=aKey(a);if(!k)return a.trim();var hit=addrPool(null).find(function(p){return aKey(p.address)===k});return hit?hit.address:a.trim()}
+function scoreAddr(p,q){
+  var toks=aTok(q);if(!toks.length)return 1+(p.mine?2:0);
+  var key=aKey(p.address),words=aTok(p.address);
+  if(!toks.every(function(t){return key.indexOf(t)>-1}))return 0;
+  var sc=1;
+  if(key.indexOf(toks.join(''))===0)sc+=5;                                         // 开头就对上
+  sc+=toks.filter(function(t){return words.some(function(w){return w.indexOf(t)===0})}).length; // 词首匹配
+  if(p.mine)sc+=2;sc+=Math.min(p.n,10)/10;
+  return sc;
+}
+function hiAddr(a,q){
+  var toks=aTok(q);if(!toks.length)return esc(a);
+  var out=esc(a);
+  toks.sort(function(x,y){return y.length-x.length}).forEach(function(t){
+    if(!/^[a-z0-9]+$/.test(t))return;
+    out=out.replace(new RegExp('('+t+')(?![^<]*>)','i'),'<b>$1</b>');
+  });
+  return out;
+}
+var GEO_CACHE={};
+var GEO_URL='https://photon.komoot.io/api/';
+var NS_BBOX='-66.6,43.3,-59.5,47.2';     // Nova Scotia 范围
+function geoFormat(pr,q){
+  var street=pr.street||(pr.osm_key==='highway'?pr.name:'')||'';
+  var num=pr.housenumber||'';
+  if(!num){var m=String(q).trim().match(/^(\d+[a-z]?)\b/i);if(m&&street)num=m[1]}   // 地图没门牌号时，沿用你打的门牌号
+  var line=street?(num?num+' '+street:street):(pr.name||'');
+  var town=pr.city||pr.town||pr.village||pr.locality||pr.district||pr.county||'';
+  var s=[line,town&&town!==line?town:''].filter(Boolean).join(', ');
+  if(pr.postcode&&/^[A-Z]\d[A-Z] ?\d[A-Z]\d$/i.test(pr.postcode))s+=' '+pr.postcode.toUpperCase();
+  return s;
+}
+function geoSearch(q,cb){
+  var k=q.toLowerCase();
+  if(GEO_CACHE[k])return cb(GEO_CACHE[k]);
+  var url=GEO_URL+'?q='+encodeURIComponent(q)+'&limit=10&lang=en&lat=44.65&lon=-63.58&bbox='+NS_BBOX;
+  fetch(url).then(function(r){return r.json()}).then(function(j){
+    var seen={},out=[];
+    (j.features||[]).forEach(function(f){
+      var pr=f.properties||{};
+      if(pr.countrycode&&pr.countrycode!=='CA')return;
+      if(pr.state&&!/nova scotia/i.test(pr.state))return;
+      if(!(pr.street||pr.name))return;
+      var a=geoFormat(pr,q),key=aKey(a);
+      if(a&&!seen[key]){seen[key]=1;out.push(a)}
+    });
+    var m=String(q).trim().match(/^(\d+)/);   // 门牌号对上的排前面
+    if(m)out=out.filter(function(a){return a.indexOf(m[1]+' ')===0}).concat(out.filter(function(a){return a.indexOf(m[1]+' ')!==0}));
+    GEO_CACHE[k]=out.slice(0,5);cb(GEO_CACHE[k]);
+  }).catch(function(){cb([])});
+}
+function attachSuggest(inpId,boxId,clrId,mineFn){
+  var inp=$(inpId),box=$(boxId),focused=false,top=null,composing=false;
+  function ranked(q){
+    var pool=addrPool(mineFn&&mineFn());
+    return pool.map(function(p){return{p:p,s:scoreAddr(p,q)}}).filter(function(x){return x.s>0}).sort(function(a,b){return b.s-a.s}).map(function(x){return x.p});
+  }
+  var geo={q:'',list:[],loading:false},geoT=null;
+  function userQ(){var sel=inp.selectionStart!=null&&inp.selectionStart!==inp.selectionEnd;return sel?inp.value.slice(0,inp.selectionStart):inp.value}
+  function render(){
+    top=null;
+    if(!focused){box.classList.add('hide');return}
+    var sel=inp.selectionStart!=null&&inp.selectionStart!==inp.selectionEnd;
+    var q=userQ();   // 自动补全的选中部分不算用户输入
+    var qk=aKey(q),cur=aKey(inp.value);
+    var list=ranked(q).filter(function(p){return sel||aKey(p.address)!==cur});
+    if(!qk)list=ranked('').filter(function(p){return aKey(p.address)!==cur});
+    list=list.slice(0,5);
+    var have={};list.forEach(function(p){have[aKey(p.address)]=1});
+    var g=(geo.q===q.trim()&&qk.length>=3)?geo.list.filter(function(a){return!have[aKey(a)]&&aKey(a)!==cur}):[];
+    var loading=geo.loading&&qk.length>=3;
+    if(!list.length&&!g.length&&!loading){box.classList.add('hide');return}
+    top=list[0]||null;
+    var h='';
+    if(list.length){
+      h+='<div class="cap">'+(qk?'用过的地址':'最近用过的地址')+'</div>'+list.map(function(p,i){
+        return'<button type="button" class="sug'+(qk&&i===0?' best':'')+'" data-a="'+esc(p.address)+'">'+hiAddr(p.address,q)+'<small>'+(p.mine?'我填过':'其他人填过')+'，最近 '+(+p.last.slice(5,7))+'/'+(+p.last.slice(8))+(p.n>1?'，用过 '+p.n+' 次':'')+'</small></button>'}).join('');
+    }
+    if(g.length||loading){
+      h+='<div class="cap">'+(loading&&!g.length?'正在查找地图上的地址…':'地图上的地址（新工地）')+'</div>'+g.map(function(a){
+        return'<button type="button" class="sug" data-a="'+esc(a)+'">📍 '+hiAddr(a,q)+'</button>'}).join('');
+    }
+    box.innerHTML=h;box.classList.remove('hide');
+  }
+  // 查地图地址（OpenStreetMap，免费，限定 Nova Scotia 范围，优先 Halifax 附近）
+  function geoLookup(){
+    clearTimeout(geoT);
+    var q=userQ().trim();
+    if(composing||aKey(q).length<3||!window.fetch){geo={q:q,list:[],loading:false};return}
+    if(GEO_CACHE[q.toLowerCase()]){geo={q:q,list:GEO_CACHE[q.toLowerCase()],loading:false};return}
+    geo={q:q,list:[],loading:true};
+    geoT=setTimeout(function(){
+      geoSearch(q,function(res){if(userQ().trim()!==q)return;geo={q:q,list:res,loading:false};render()});
+    },350);
+  }
+  // 边打字边补全：输入开头对上已有地址时，直接把剩下的部分补上并选中（继续打字会覆盖它）
+  function inlineComplete(e){
+    if(composing||(e&&e.isComposing))return;
+    if(e&&e.inputType&&e.inputType.indexOf('insert')!==0)return;   // 删除时不补全
+    var v=inp.value;if(v.length<2||inp.selectionStart!==v.length)return;
+    var lv=v.toLowerCase();
+    var c=ranked(v).find(function(p){return p.address.toLowerCase().indexOf(lv)===0&&p.address.length>v.length});
+    if(!c)return;
+    inp.value=c.address;   // 用已有写法（大小写也统一）
+    try{inp.setSelectionRange(v.length,inp.value.length)}catch(err){}
+  }
+  function pick(a){inp.value=a;focused=false;render();inp.blur()}
+  inp.addEventListener('compositionstart',function(){composing=true});
+  inp.addEventListener('compositionend',function(){composing=false;geoLookup();render()});
+  inp.addEventListener('focus',function(){focused=true;render()});
+  inp.addEventListener('input',function(e){inlineComplete(e);geoLookup();render()});
+  inp.addEventListener('keydown',function(e){
+    if((e.key==='Enter'||e.key==='Tab')&&inp.selectionStart!==inp.selectionEnd){e.preventDefault();pick(inp.value);return}  // 接受补全
+    if(e.key==='Enter'&&top&&aKey(inp.value)&&aKey(top.address)!==aKey(inp.value)){e.preventDefault();pick(top.address)}
+  });
+  inp.addEventListener('blur',function(){setTimeout(function(){if(document.activeElement===inp)return;focused=false;render()},180)});
+  box.addEventListener('mousedown',function(e){e.preventDefault()});
+  box.addEventListener('click',function(e){var b=e.target.closest('.sug');if(b)pick(b.dataset.a)});
+  $(clrId).addEventListener('click',function(){inp.value='';inp.focus();render()});
+  return render;
+}
+var renderFSugs=attachSuggest('f-addr','f-sugs','f-addr-clr',function(){return ME&&ME.role==='worker'?ME.id:null});
+var renderESugs=attachSuggest('e-addr','e-sugs','e-addr-clr',function(){return $('e-worker').value});
+function fillAddrList(){if(renderFSugs)renderFSugs();if(renderESugs)renderESugs()}
+
+// ═════════ 管理端 ═════════
+function enterAdmin(){show('v-admin');A.tab='sum';document.querySelectorAll('#a-tabs .tab').forEach(function(x){x.classList.toggle('on',x.dataset.t==='sum')});['sum','wk','set'].forEach(function(t){$('t-'+t).classList.toggle('hide',t!=='sum')});if(!$('a-month').value)$('a-month').value=today().slice(0,7);renderAdmin();fillAddrList()}
+$('a-out').addEventListener('click',logout);
+$('a-tabs').addEventListener('click',function(e){var b=e.target.closest('.tab');if(!b)return;A.tab=b.dataset.t;
+  document.querySelectorAll('#a-tabs .tab').forEach(function(x){x.classList.toggle('on',x===b)});
+  ['sum','wk','set'].forEach(function(t){$('t-'+t).classList.toggle('hide',t!==A.tab)});renderAdmin()});
+$('a-view').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;A.view=b.dataset.v;
+  document.querySelectorAll('#a-view button').forEach(function(x){x.classList.toggle('on',x===b)});renderSum()});
+function shiftMonth(n){var m=$('a-month').value||today().slice(0,7),y=+m.slice(0,4),mo=+m.slice(5)-1+n;var d=new Date(y,mo,1);$('a-month').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');renderSum()}
+$('a-mprev').addEventListener('click',function(){shiftMonth(-1)});
+$('a-mnext').addEventListener('click',function(){shiftMonth(1)});
+['a-worker','a-type'].forEach(function(id){$(id).addEventListener('change',renderSum)});
+$('a-q').addEventListener('input',renderSum);
+
+function renderAdmin(){
+  if(!ME||ME.role!=='admin')return;
+  if(A.tab==='sum')renderSum();else if(A.tab==='wk')renderWorkers();else renderSettings();
+}
+function fillSel(id,html){var el=$(id),v=el.value;el.innerHTML=html;if(v){for(var i=0;i<el.options.length;i++)if(el.options[i].value===v){el.value=v;break}}}
+function filtered(){
+  var m=$('a-month').value,w=$('a-worker').value,t=$('a-type').value,q=$('a-q').value.trim().toLowerCase();
+  return entries().filter(function(e){return e.month===m&&(!w||e.workerId===w)&&(!t||e.type===t)&&(!q||(e.address||'').toLowerCase().indexOf(q)>-1)});
+}
+function pivot(rows,m){
+  var n=dim(m),by={},dt={};
+  rows.forEach(function(e){var k=e.workerId;if(!by[k])by[k]={name:wName(k,e.workerName),d:{},total:0};
+    var d=+e.date.slice(8);by[k].d[d]=(by[k].d[d]||0)+(+e.hours||0);by[k].total+=(+e.hours||0);dt[d]=(dt[d]||0)+(+e.hours||0)});
+  var list=Object.keys(by).map(function(k){by[k].days=Object.keys(by[k].d).length;return by[k]}).sort(function(a,b){return a.name.localeCompare(b.name)});
+  return{n:n,list:list,dt:dt};
+}
+function byAddr(rows){
+  var by={};
+  rows.forEach(function(e){var k=(e.address||'').trim().toLowerCase();
+    if(!by[k])by[k]={address:(e.address||'').trim(),types:{},workers:{},days:{},h:0};
+    var p=by[k];p.types[typeName(e.type)]=1;p.workers[wName(e.workerId,e.workerName)]=1;p.days[e.date]=1;p.h+=(+e.hours||0)});
+  return Object.keys(by).map(function(k){return by[k]}).sort(function(a,b){return b.h-a.h});
+}
+function isWe(m,d){var x=new Date(+m.slice(0,4),+m.slice(5)-1,d).getDay();return x===0||x===6}
+function sortDetail(rows){return rows.slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:wName(a.workerId,a.workerName).localeCompare(wName(b.workerId,b.workerName))})}
+
+function renderSum(){
+  fillSel('a-worker','<option value="">全部工人</option>'+Object.keys(ST.workers).sort(function(a,b){return ST.workers[a].name.localeCompare(ST.workers[b].name)}).map(function(k){var w=ST.workers[k];return'<option value="'+k+'">'+esc(w.name)+(w.active===false?'（停用）':'')+'</option>'}).join(''));
+  fillSel('a-type','<option value="">全部类型</option>'+TYPES.map(function(t){return'<option value="'+t[0]+'">'+t[1]+'</option>'}).join(''));
+  if(!$('a-month').value)$('a-month').value=today().slice(0,7);
+  var m=$('a-month').value,rows=filtered();
+  $('a-mlbl').textContent=m.slice(0,4)+'年'+(+m.slice(5))+'月';$('a-mnext').disabled=m>=today().slice(0,7);
+  var nW=Object.keys(rows.reduce(function(a,e){a[e.workerId]=1;return a},{})).length;
+  var nA=byAddr(rows).length;
+  $('a-stats').innerHTML='<div><b>'+sum(rows)+'</b><span>总工时（小时）</span></div><div><b>'+nW+'</b><span>出勤工人</span></div><div><b>'+nA+'</b><span>工地地址</span></div><div><b>'+rows.length+'</b><span>记录条数</span></div>';
+  var body=$('a-body');
+  if(!rows.length){body.innerHTML='<div class="empty">'+(+m.slice(5))+'月还没有符合条件的记录</div>';return}
+  if(A.view==='pivot'){
+    var pv=pivot(rows,m),h='<table class="pv"><thead><tr><th>工人</th>',d;
+    for(d=1;d<=pv.n;d++)h+='<th class="'+(isWe(m,d)?'we':'')+'">'+d+'<div style="font-size:10px;font-weight:400">'+WD[new Date(+m.slice(0,4),+m.slice(5)-1,d).getDay()]+'</div></th>';
+    h+='<th>合计</th><th>天数</th></tr></thead><tbody>';
+    pv.list.forEach(function(w){h+='<tr><td><b>'+esc(w.name)+'</b></td>';for(var d=1;d<=pv.n;d++){var v=w.d[d];h+='<td class="'+(isWe(m,d)?'we ':'')+(v?'':'z')+'">'+(v||'·')+'</td>'}h+='<td class="tot">'+w.total+'</td><td>'+w.days+'</td></tr>'});
+    h+='</tbody><tfoot><tr><td>每日合计</td>';for(d=1;d<=pv.n;d++)h+='<td class="'+(isWe(m,d)?'we':'')+'">'+(pv.dt[d]||'')+'</td>';
+    body.innerHTML=h+'<td class="tot">'+sum(rows)+'</td><td></td></tr></tfoot></table>';
+  }else if(A.view==='addr'){
+    body.innerHTML='<table><thead><tr><th>地址</th><th>类型</th><th>工人</th><th>天数</th><th>总工时</th></tr></thead><tbody>'+byAddr(rows).map(function(p){
+      return'<tr><td><b>'+esc(p.address)+'</b></td><td>'+Object.keys(p.types).map(esc).join('、')+'</td><td>'+Object.keys(p.workers).map(esc).join('、')+'</td><td class="n">'+Object.keys(p.days).length+'</td><td class="n">'+p.h+'h</td></tr>'}).join('')+'</tbody></table>';
+  }else{
+    body.innerHTML='<table><thead><tr><th>日期</th><th>工人</th><th>地址</th><th>类型</th><th>工时</th><th class="hide-m">备注</th><th></th></tr></thead><tbody>'+sortDetail(rows).reverse().map(function(e){
+      return'<tr><td style="white-space:nowrap">'+(+e.date.slice(5,7))+'/'+(+e.date.slice(8))+' 周'+wd(e.date)+'</td><td><b>'+esc(wName(e.workerId,e.workerName))+'</b></td><td>'+esc(e.address)+'</td><td>'+esc(typeName(e.type))+'</td><td class="n">'+e.hours+'h</td><td class="hide-m muted">'+esc(e.notes||'')+(e.updatedBy?' <span style="color:var(--ink3)">（'+esc(e.updatedBy)+' 改过）</span>':'')+'</td><td><button class="btn sm" data-aedit="'+e.id+'">编辑</button></td></tr>'}).join('')+'</tbody></table>';
+  }
+}
+$('a-body').addEventListener('click',function(e){var b=e.target.closest('[data-aedit]');if(b)openEdit(b.dataset.aedit)});
+$('a-add').addEventListener('click',function(){openEdit(null)});
+
+// 编辑 / 补录
+function openEdit(id){
+  var x=id?ST.entries[id]:null;A.editId=id;
+  $('e-title').textContent=x?'编辑记录':'补录工时';
+  $('e-date').value=x?x.date:today();$('e-date').max=today();
+  $('e-worker').innerHTML='<option value="">选择工人</option>'+Object.keys(ST.workers).sort(function(a,b){return ST.workers[a].name.localeCompare(ST.workers[b].name)}).filter(function(k){return ST.workers[k].active!==false||(x&&x.workerId===k)}).map(function(k){return'<option value="'+k+'"'+(x&&x.workerId===k?' selected':'')+'>'+esc(ST.workers[k].name)+'</option>'}).join('');
+  $('e-addr').value=x?x.address:'';$('e-type').innerHTML=typeOpts(x?x.type:'Shingle');$('e-hours').innerHTML=hourOpts(x?x.hours:8);$('e-notes').value=x?(x.notes||''):'';
+  $('e-del').classList.toggle('hide',!x);$('e-err').textContent='';
+  $('ov-edit').classList.remove('hide');
+}
+function closeEdit(){$('ov-edit').classList.add('hide');A.editId=null}
+$('e-cancel').addEventListener('click',closeEdit);
+$('ov-edit').addEventListener('click',function(e){if(e.target===$('ov-edit'))closeEdit()});
+$('e-save').addEventListener('click',function(){
+  var date=$('e-date').value,wid=$('e-worker').value,addr=canonAddr($('e-addr').value);
+  if(!date||date>today()){$('e-err').textContent='日期不对';return}
+  if(!wid){$('e-err').textContent='请选择工人';return}
+  if(!addr){$('e-err').textContent='请填写地址';return}
+  var data={date:date,month:date.slice(0,7),workerId:wid,workerName:wName(wid),address:addr,type:$('e-type').value,hours:+$('e-hours').value,notes:$('e-notes').value.trim()};
+  var p=A.editId?DB.update('entries/'+A.editId,Object.assign(data,{updatedAt:Date.now(),updatedBy:'管理员'})):DB.push('entries',Object.assign(data,{createdAt:Date.now(),createdBy:'管理员'}));
+  p.then(function(){toast('已保存');closeEdit()}).catch(function(e){$('e-err').textContent='保存失败：'+e.message});
+});
+$('e-del').addEventListener('click',function(){
+  if(!A.editId||!confirm('删除这条记录？'))return;
+  DB.remove('entries/'+A.editId).then(function(){toast('已删除');closeEdit()});
+});
+
+// 导出 Excel：明细 / 工人×日期 / 按地址 三张表
+function copyText(t){
+  function fb(){var ta=document.createElement('textarea');ta.value=t;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.top='-1000px';document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,t.length);var ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(ta);toast(ok?'已复制，去粘贴吧':'复制失败，请用浏览器打开后导出')}
+  if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(t).then(function(){toast('已复制，去粘贴吧')},fb);else fb();
+}
+function tsv(a){return a.map(function(r){return r.map(function(c){return String(c).replace(/[\t\n]/g,' ')}).join('\t')}).join('\n')}
+function detailAoa(rows){var A1=[['日期','星期','工人','地址','项目类型','工时(小时)','备注']];sortDetail(rows).forEach(function(e){A1.push([e.date,'周'+wd(e.date),wName(e.workerId,e.workerName),e.address,typeName(e.type)+' '+e.type,+e.hours,e.notes||''])});A1.push(['','','','','合计',sum(rows),'']);return A1}
+function pivotAoa(rows,m){var pv=pivot(rows,m),hd=['工人'],d;for(d=1;d<=pv.n;d++)hd.push(d+'日');hd.push('合计','出勤天数');var A2=[hd];pv.list.forEach(function(w){var r=[w.name];for(var d=1;d<=pv.n;d++)r.push(w.d[d]||'');r.push(w.total,w.days);A2.push(r)});var ft=['每日合计'];for(d=1;d<=pv.n;d++)ft.push(pv.dt[d]||'');ft.push(sum(rows),'');A2.push(ft);return A2}
+$('wx-ok').addEventListener('click',function(){$('ov-wx').classList.add('hide')});
+$('ov-wx').addEventListener('click',function(e){if(e.target===$('ov-wx'))$('ov-wx').classList.add('hide')});
+$('wx-copy1').addEventListener('click',function(){var r=filtered();if(!r.length){toast('这个月没有记录');return}copyText(tsv(detailAoa(r)))});
+$('wx-copy2').addEventListener('click',function(){var r=filtered();if(!r.length){toast('这个月没有记录');return}copyText(tsv(pivotAoa(r,$('a-month').value)))});
+$('a-export').addEventListener('click',function(){
+  if(IS_WX){$('ov-wx').classList.remove('hide');return}
+  var m=$('a-month').value,rows=filtered();
+  if(!rows.length){toast('这个月没有可导出的记录');return}
+  var A1=[['日期','星期','工人','地址','项目类型','工时(小时)','备注']];
+  sortDetail(rows).forEach(function(e){A1.push([e.date,'周'+wd(e.date),wName(e.workerId,e.workerName),e.address,typeName(e.type)+' '+e.type,+e.hours,e.notes||''])});
+  A1.push(['','','','','合计',sum(rows),'']);
+  var fn='NS-Roofing-工时-'+m;
+  if(typeof XLSX==='undefined'){
+    var csv='\ufeff'+A1.map(function(r){return r.map(function(c){c=String(c);return/[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(',')}).join('\n');
+    var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=fn+'.csv';a.click();
+    toast('Excel 组件没加载，已导出 CSV 明细');return;
+  }
+  var pv=pivot(rows,m),hd=['工人'],d;
+  for(d=1;d<=pv.n;d++)hd.push(d+'日('+WD[new Date(+m.slice(0,4),+m.slice(5)-1,d).getDay()]+')');
+  hd.push('合计','出勤天数');var A2=[hd];
+  pv.list.forEach(function(w){var r=[w.name];for(var d=1;d<=pv.n;d++)r.push(w.d[d]||'');r.push(w.total,w.days);A2.push(r)});
+  var ft=['每日合计'];for(d=1;d<=pv.n;d++)ft.push(pv.dt[d]||'');ft.push(sum(rows),'');A2.push(ft);
+  var A3=[['地址','项目类型','工人','施工天数','总工时(小时)']];
+  byAddr(rows).forEach(function(p){A3.push([p.address,Object.keys(p.types).join('、'),Object.keys(p.workers).join('、'),Object.keys(p.days).length,p.h])});
+  A3.push(['合计','','','',sum(rows)]);
+  var wb=XLSX.utils.book_new();
+  var s1=XLSX.utils.aoa_to_sheet(A1);s1['!cols']=[{wch:11},{wch:5},{wch:12},{wch:42},{wch:16},{wch:10},{wch:26}];
+  var s2=XLSX.utils.aoa_to_sheet(A2);s2['!cols']=[{wch:12}].concat(Array(pv.n).fill({wch:7})).concat([{wch:7},{wch:9}]);
+  var s3=XLSX.utils.aoa_to_sheet(A3);s3['!cols']=[{wch:42},{wch:18},{wch:24},{wch:9},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,s1,'明细');XLSX.utils.book_append_sheet(wb,s2,'工人×日期');XLSX.utils.book_append_sheet(wb,s3,'按地址');
+  XLSX.writeFile(wb,fn+'.xlsx');
+});
+
+// 工人管理
+function renderWorkers(){
+  var used={};entries().forEach(function(e){used[e.workerId]=(used[e.workerId]||0)+1});
+  var ks=Object.keys(ST.workers).sort(function(a,b){var x=ST.workers[a],y=ST.workers[b];return((x.active===false)-(y.active===false))||x.name.localeCompare(y.name)});
+  $('wk-list').innerHTML=ks.length?ks.map(function(k){var w=ST.workers[k],off=w.active===false;
+    return'<div class="wk'+(off?' off':'')+'"><div class="nm">'+esc(w.name)+(off?' <span class="muted">已停用</span>':'')+'<div class="muted" style="font-weight:400">'+(used[k]||0)+' 条记录</div></div>'
+      +(A.pinEdit===k?'<input class="in" id="wk-newpin" inputmode="numeric" maxlength="6" placeholder="新 PIN" style="width:100px;padding:6px 10px"><button class="btn sm pri" data-wpinok="'+k+'">保存</button><button class="btn sm" data-wpinx="1">取消</button>':'<button class="btn sm" data-wpin="'+k+'">改 PIN</button>')
+      +'<button class="btn sm" data-wtog="'+k+'">'+(off?'启用':'停用')+'</button>'
+      +(used[k]?'':'<button class="btn sm del" data-wdel="'+k+'">删除</button>')+'</div>'}).join(''):'<p class="muted">还没有工人</p>';
+}
+$('wk-add').addEventListener('click',function(){
+  var n=$('wk-name').value.trim(),p=$('wk-pin').value.trim();
+  if(!n){$('wk-err').textContent='请输入姓名';return}
+  if(!/^\d{4,6}$/.test(p)){$('wk-err').textContent='PIN 需要 4 到 6 位数字';return}
+  if(Object.keys(ST.workers).some(function(k){return ST.workers[k].name.toLowerCase()===n.toLowerCase()})){$('wk-err').textContent='已经有叫 '+n+' 的工人了';return}
+  DB.push('workers',{name:n,pin:p,active:true,createdAt:Date.now()}).then(function(){$('wk-name').value='';$('wk-pin').value='';$('wk-err').textContent='';toast('已添加 '+n);$('wk-name').focus()});
+});
+$('wk-list').addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b)return;
+  if(b.dataset.wpin){A.pinEdit=b.dataset.wpin;renderWorkers();$('wk-newpin').focus()}
+  else if(b.dataset.wpinx){A.pinEdit=null;renderWorkers()}
+  else if(b.dataset.wpinok){var k=b.dataset.wpinok,p=$('wk-newpin').value.trim();if(!/^\d{4,6}$/.test(p)){toast('PIN 需要 4 到 6 位数字');return}A.pinEdit=null;DB.update('workers/'+k,{pin:p}).then(function(){toast(ST.workers[k].name+' 的 PIN 已更新')})}
+  else if(b.dataset.wtog){var k2=b.dataset.wtog;DB.update('workers/'+k2,{active:ST.workers[k2].active===false})}
+  else if(b.dataset.wdel){var k3=b.dataset.wdel;if(confirm('删除 '+ST.workers[k3].name+'？'))DB.remove('workers/'+k3)}
+});
+
+// 设置
+function renderSettings(){
+  $('set-warn').textContent=adminPin()===DEFAULT_ADMIN_PIN?'现在用的是默认 PIN 0000，请马上改掉。':'管理员 PIN 已设置。';
+  $('set-conn').textContent=DB.live?('已连接 Firebase：'+FIREBASE_CONFIG.databaseURL+'，数据在 '+ROOT+' 节点下。'):'本地演示模式。在文件开头的 FIREBASE_CONFIG 里填入配置，上传后所有人共用一份数据。';
+}
+$('set-save').addEventListener('click',function(){
+  var p=$('set-pin').value.trim();if(!/^\d{4,8}$/.test(p)){toast('PIN 需要 4 到 8 位数字');return}
+  DB.update('settings',{adminPin:p}).then(function(){ME.pin=p;lsSet('nsts_me',JSON.stringify(ME));$('set-pin').value='';toast('管理员 PIN 已更新')});
+});
+
+if(DB.live)DB.conn(function(ok){if(!ok&&ME)toast('网络断开，恢复后会自动同步')});
+</script>
+</body>
+</html>
