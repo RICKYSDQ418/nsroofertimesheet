@@ -311,6 +311,7 @@ var FIREBASE_CONFIG = {
 };
 var ROOT = 'timesheet';     // 数据根节点
 var LOCK_DAYS = 7;          // 工人只能修改最近几天的记录
+var HIDE_PREV_AFTER = 10;   // 每月 10 号之后，工人看不到上个月的记录（管理员不受影响）
 var DEFAULT_ADMIN_PIN = '0000';
 
 var TYPES=[['Shingle','沥青瓦'],['Metal','金属屋面'],['Flat','平屋面'],['Repair','维修'],['Siding','外墙板'],['Insulation','保温'],['Other','其他']];
@@ -365,6 +366,13 @@ function entries(){return Object.keys(ST.entries||{}).map(function(k){return Obj
 function sum(a){return a.reduce(function(s,e){return s+(+e.hours||0)},0)}
 function adminPin(){return(ST.settings&&ST.settings.adminPin)||DEFAULT_ADMIN_PIN}
 function lockedDate(ds){return ds<addDays(today(),-LOCK_DAYS)}
+// 工人能看到的最早日期：1-10 号可以看上个月，11 号起只能看本月
+function workerMinDate(){
+  var t=today(),first=t.slice(0,8)+'01';
+  if(+t.slice(8)<=HIDE_PREV_AFTER){var p=parse(first);p.setMonth(p.getMonth()-1);return ymd(p)}
+  return first;
+}
+function workerVisible(e){return e.date>=workerMinDate()}
 var tt;function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show')},2200)}
 function show(v){['v-login','v-worker','v-admin'].forEach(function(x){$(x).classList.toggle('hide',x!==v)})}
 function typeOpts(sel){return TYPES.map(function(t){return'<option value="'+t[0]+'"'+(t[0]===sel?' selected':'')+'>'+t[1]+'（'+t[0]+'）</option>'}).join('')}
@@ -424,7 +432,7 @@ function logout(){ME=null;pickId=null;adminMode=false;EDIT=null;lsDel('nsts_me')
 // ═════════ 工人端 ═════════
 function enterWorker(){DAY=today();resetForm();show('v-worker');renderWorker();fillAddrList()}
 $('w-who').addEventListener('click',function(){if(confirm('退出登录？'))logout()});
-$('d-prev').addEventListener('click',function(){DAY=addDays(DAY,-1);resetForm();renderWorker()});
+$('d-prev').addEventListener('click',function(){if(DAY>workerMinDate()){DAY=addDays(DAY,-1);resetForm();renderWorker()}});
 $('d-next').addEventListener('click',function(){if(DAY<today()){DAY=addDays(DAY,1);resetForm();renderWorker()}});
 
 function buildPickers(){
@@ -450,11 +458,12 @@ $('f-cancel').addEventListener('click',function(){resetForm();renderWorker()});
 function renderWorker(){
   if(!ME||ME.role!=='worker')return;
   var w=ST.workers[ME.id];$('w-who').textContent=w.name+'　退出';
+  if(DAY<workerMinDate())DAY=workerMinDate();   // 跨过 10 号时自动回到本月
   var isToday=DAY===today(),d=parse(DAY);
   $('d-big').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日';
   $('d-sub').textContent='周'+wd(DAY)+(isToday?'　今天':DAY===addDays(today(),-1)?'　昨天':'');
-  $('d-next').disabled=isToday;
-  var mine=entries().filter(function(e){return e.workerId===ME.id});
+  $('d-next').disabled=isToday;$('d-prev').disabled=DAY<=workerMinDate();
+  var mine=entries().filter(function(e){return e.workerId===ME.id&&workerVisible(e)});
   var day=mine.filter(function(e){return e.date===DAY}).sort(function(a,b){return(a.createdAt||0)-(b.createdAt||0)});
   var locked=lockedDate(DAY);
   $('d-tot').textContent=sum(day);
